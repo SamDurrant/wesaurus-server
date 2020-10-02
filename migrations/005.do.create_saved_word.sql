@@ -1,0 +1,5 @@
+CREATE TABLE saved_word (
+  user_id INTEGER REFERENCES we_user(id) ON DELETE CASCADE NOT NULL,
+  word_id INTEGER REFERENCES word(id) ON DELETE CASCADE NOT NULL,
+  PRIMARY KEY (user_id, word_id)
+);
