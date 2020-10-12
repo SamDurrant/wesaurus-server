@@ -21,6 +21,9 @@ app.use(helmet())
 
 app.use('/api/words', wordsRouter)
 
+app.get('/', (req, res) => {
+  res.send('Hello, world!')
+})
 // hides error messages from users/malicious parties in prod
 app.use(function errorHandler(error, req, res, next) {
   let response
