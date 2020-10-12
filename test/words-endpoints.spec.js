@@ -153,4 +153,148 @@ describe('Words Endpoints', function () {
       })
     })
   })
+
+  //
+  // GET SPECIFIC ENDPOINT
+  //
+  describe('GET /api/words/:word_id', () => {
+    context(`Given no words`, () => {
+      it(`responds with 404`, () => {
+        return supertest(app)
+          .get('/api/words/1')
+          .expect(404, {
+            error: {
+              message: `Word does not exist`,
+            },
+          })
+      })
+    })
+
+    context(`Given there are words in the database`, () => {
+      const testWords = makeWordsArray()
+
+      beforeEach('insert words', () => {
+        return db.into('word').insert(testWords)
+      })
+
+      it('responds with 200 and the specified word', () => {
+        const wordId = 2
+        const expectedWord = testWords[wordId - 1]
+
+        return supertest(app)
+          .get(`/api/words/${wordId}`)
+          .expect(200, expectedWord)
+      })
+    })
+
+    context(`Given XSS attack content`, () => {
+      const { maliciousWord, expectedWord } = makeMaliciousWord()
+
+      beforeEach('insert malicious word', () => {
+        return db.insert([maliciousWord]).into('word')
+      })
+
+      it(`removes XSS attack context`, () => {
+        return supertest(app)
+          .get('/api/words')
+          .expect(200)
+          .expect((res) => {
+            expect(res.body[0].text).to.eql(expectedWord.text)
+            expect(res.body[0].id).to.eql(expectedWord.id)
+          })
+      })
+    })
+  })
+
+  //
+  // DELETE SPECIFIC ENDPOINT
+  //
+  describe('DELETE /api/words/:word_id', () => {
+    context('Given no words', () => {
+      it(`responds with 404`, () => {
+        return supertest(app)
+          .delete('/api/words/1')
+          .expect(404, {
+            error: {
+              message: `Word does not exist`,
+            },
+          })
+      })
+    })
+
+    context('Given there are words in the database', () => {
+      const testWords = makeWordsArray()
+
+      beforeEach('insert words', () => {
+        return db.into('word').insert(testWords)
+      })
+
+      it(`responds with 204 and removes the word`, () => {
+        const idToRemove = 2
+        const expectedWords = testWords.filter((word) => word.id !== idToRemove)
+
+        return supertest(app)
+          .delete(`/api/words/${idToRemove}`)
+          .expect(204)
+          .then((res) => supertest(app).get(`/api/words`).expect(expectedWords))
+      })
+    })
+  })
+
+  //
+  // UPDATE SPECIFIC ENDPOINT
+  //
+  describe('PATCH /api/words/:word_id', () => {
+    const idToUpdate = 2
+    const updatedWord = {
+      text: 'Array',
+    }
+
+    context('Given no words', () => {
+      it(`responds with 404`, () => {
+        return supertest(app)
+          .patch(`/api/words/${idToUpdate}`)
+          .send(updatedWord)
+          .expect(404, {
+            error: {
+              message: `Word does not exist`,
+            },
+          })
+      })
+    })
+
+    context(`Given there are words in the database`, () => {
+      const testWords = makeWordsArray()
+
+      beforeEach('insert words', () => {
+        return db.into('word').insert(testWords)
+      })
+
+      it(`responds with 204 and updates the word`, () => {
+        const expectedWord = {
+          ...testWords[idToUpdate - 1],
+          ...updatedWord,
+        }
+
+        return supertest(app)
+          .patch(`/api/words/${idToUpdate}`)
+          .send(updatedWord)
+          .expect(204)
+          .then(() =>
+            supertest(app).get(`/api/words/${idToUpdate}`).expect(expectedWord)
+          )
+      })
+
+      it(`responds with 400 when no required fields supplied`, () => {
+        return supertest(app)
+          .patch(`/api/words/${idToUpdate}`)
+          .send({ irrelevantField: 'nonsense' })
+          .expect(400, {
+            error: {
+              message: `Request body must contain 'text'`,
+            },
+          })
+      })
+    })
+  })
 })
