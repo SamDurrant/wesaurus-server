@@ -8,6 +8,8 @@ const {
   cleanTables,
   seedDefinitions,
   makeMaliciousDefinition,
+  seedUsers,
+  seedWords,
 } = require('./test-helpers')
 
 describe('Definitions Endpoints', function () {
@@ -147,6 +149,192 @@ describe('Definitions Endpoints', function () {
               message: `Missing '${field}' in request body`,
             },
           })
+      })
+    })
+  })
+
+  //
+  // GET DEF_ID ENDPOINT
+  //
+  describe('GET /api/definitions/:definition_id', () => {
+    context(`Given no definitions`, () => {
+      beforeEach(() =>
+        seedUsers(db, testUsers).then(() => seedWords(db, testWords))
+      )
+
+      it(`responds with 404`, () => {
+        const defId = 123456
+        return supertest(app)
+          .get(`/api/definitions/${defId}`)
+          .expect(404, {
+            error: {
+              message: `Definition doesn't exist`,
+            },
+          })
+      })
+    })
+
+    context(`Given there are definitions in the database`, () => {
+      beforeEach(() =>
+        seedDefinitions(db, testUsers, testWords, testDefinitions)
+      )
+
+      it(`responds with 200 and the specified definition`, () => {
+        const defId = 2
+        const expectedDefinition = makeExpectedDefinition(
+          testUsers,
+          testWords,
+          testDefinitions[defId - 1]
+        )
+
+        return supertest(app)
+          .get(`/api/definitions/${defId}`)
+          .expect(200, expectedDefinition)
+      })
+    })
+
+    context(`Given an XSS attack definition`, () => {
+      const testUser = testUsers[1]
+      const testWord = testWords[1]
+      const {
+        maliciousDefinition,
+        expectedDefinition,
+      } = makeMaliciousDefinition(testUser, testWord)
+
+      beforeEach('insert malicious definition', () => {
+        return seedDefinitions(
+          db,
+          [testUser],
+          [testWord],
+          [maliciousDefinition]
+        )
+      })
+
+      it('removes XSS attack content', () => {
+        return supertest(app)
+          .get(`/api/definitions/${maliciousDefinition.id}`)
+          .expect(200)
+          .expect((res) => {
+            expect(res.body.text).to.eql(expectedDefinition.text)
+          })
+      })
+    })
+  })
+
+  //
+  // PATCH DEF_ID ENDPOINT
+  //
+  describe(`PATCH /api/definitions/:definition_id`, () => {
+    context(`Given no definitions`, () => {
+      beforeEach(() =>
+        seedUsers(db, testUsers).then(() => seedWords(db, testWords))
+      )
+
+      it(`responds with 404`, () => {
+        return supertest(app)
+          .patch('/api/definitions/1')
+          .send({ text: 'test 123', like_count: 2 })
+          .expect(404, {
+            error: {
+              message: `Definition doesn't exist`,
+            },
+          })
+      })
+    })
+
+    context(`Given there are definitions`, () => {
+      beforeEach(() =>
+        seedDefinitions(db, testUsers, testWords, testDefinitions)
+      )
+
+      it(`responds with 204 and updates the definition`, () => {
+        const idToUpdate = 1
+        const updatedDefinition = {
+          text: 'this is new text',
+          like_count: 1,
+        }
+
+        const expectedDefinition = {
+          ...testDefinitions[idToUpdate - 1],
+          ...updatedDefinition,
+        }
+
+        return supertest(app)
+          .patch(`/api/definitions/${idToUpdate}`)
+          .send(updatedDefinition)
+          .expect(204)
+          .then(() =>
+            supertest(app)
+              .get(`/api/definitions/${idToUpdate}`)
+              .expect((res) => {
+                expect(res.body.text).to.eql(expectedDefinition.text)
+                expect(res.body.user_id).to.eql(expectedDefinition.user_id)
+                expect(res.body.word_id).to.eql(expectedDefinition.word_id)
+                const expectedDate = new Date(
+                  expectedDefinition.date_created
+                ).toLocaleString()
+                const actualDate = new Date(
+                  res.body.date_created
+                ).toLocaleString()
+                expect(actualDate).to.eql(expectedDate)
+              })
+          )
+      })
+
+      it(`responds with 400 when wrong required fields are supplied`, () => {
+        const idToUpdate = 2
+
+        return supertest(app)
+          .patch(`/api/definitions/${idToUpdate}`)
+          .send({ irrelevance: 'test test' })
+          .expect(400, {
+            error: {
+              message: `Request body must contain 'text' and 'like_count'`,
+            },
+          })
+      })
+    })
+  })
+
+  //
+  // DELETE DEF_ID ENDPOINT
+  //
+  describe(`DELETE /api/definitions/:definition_id`, () => {
+    context(`Given there are no definitions`, () => {
+      beforeEach(() =>
+        seedUsers(db, testUsers).then(() => seedWords(db, testWords))
+      )
+
+      context(`Given no definitions`, () => {
+        it(`responds with 404`, () => {
+          return supertest(app)
+            .delete('/api/definitions/1')
+            .expect(404, {
+              error: {
+                message: `Definition doesn't exist`,
+              },
+            })
+        })
+      })
+    })
+
+    context(`Given there are definitions in the database`, () => {
+      beforeEach(() =>
+        seedDefinitions(db, testUsers, testWords, testDefinitions)
+      )
+
+      it(`responds with 204 and removes the definition`, () => {
+        const idToRemove = 2
+        const expectedDefinitions = testDefinitions.filter(
+          (def) => def.id !== idToRemove
+        )
+
+        return supertest(app)
+          .delete(`/api/definitions/${idToRemove}`)
+          .expect(204)
+          .then(() =>
+            supertest(app).get(`/api/definitions`).expect(expectedDefinitions)
+          )
       })
     })
   })

@@ -80,7 +80,7 @@ function makeDefinitionsArray(users, words) {
       user_id: users[0].id,
       word_id: words[0].id,
       like_count: 15,
-      date_created: new Date('2030-11-13T16:28:32.615Z'),
+      date_created: new Date().toISOString(),
       text: 'A true or false value.',
     },
     {
@@ -88,7 +88,7 @@ function makeDefinitionsArray(users, words) {
       user_id: users[0].id,
       word_id: words[1].id,
       like_count: 15,
-      date_created: new Date('2030-11-13T16:28:32.615Z'),
+      date_created: new Date().toISOString(),
       text:
         'A string is a sequence of one or more characters that may consist of letters, numbers, or symbols.',
     },
@@ -97,7 +97,7 @@ function makeDefinitionsArray(users, words) {
       user_id: users[1].id,
       word_id: words[1].id,
       like_count: 15,
-      date_created: new Date('2030-11-13T16:28:32.615Z'),
+      date_created: new Date().toISOString(),
       text: 'A string is zero or more characters written inside quotes.',
     },
     {
@@ -105,7 +105,7 @@ function makeDefinitionsArray(users, words) {
       user_id: users[2].id,
       word_id: words[2].id,
       like_count: 15,
-      date_created: new Date('2030-11-13T16:28:32.615Z'),
+      date_created: new Date().toISOString(),
       text:
         'An object is a standalone entity, with properties and type. Compare it with a cup, for example. A cup is an object, with properties. A cup has a color, a design, weight, a material it is made of, etc.',
     },
@@ -121,7 +121,7 @@ function makeExpectedDefinition(users, words, definition) {
     user_id: user.id,
     word_id: word.id,
     like_count: definition.like_count,
-    date_created: definition.date_created.toISOString(),
+    date_created: definition.date_created,
     text: definition.text,
   }
 }
