@@ -1,7 +1,7 @@
 const express = require('express')
 const path = require('path')
 const xss = require('xss')
-const WordsService = require('./words.service')
+const WordsService = require('./words-service')
 
 const wordsRouter = express.Router()
 const jsonParser = express.json()
@@ -45,7 +45,6 @@ wordsRouter
         // if word doesn't exist, create it and return response
         return WordsService.insertWord(req.app.get('db'), newWord).then(
           (word) => {
-            console.log('POSTING', word)
             res
               .status(201)
               .location(path.posix.join(req.originalUrl, `/${word.id}`))

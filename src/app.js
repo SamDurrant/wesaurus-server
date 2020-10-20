@@ -8,6 +8,7 @@ const { NODE_ENV } = require('./config')
 // routes
 const wordsRouter = require('./words/words-router')
 const usersRouter = require('./users/users-router')
+const definitionsRouter = require('./definitions/definitions-router')
 
 const app = express()
 
@@ -22,6 +23,7 @@ app.use(helmet())
 
 app.use('/api/words', wordsRouter)
 app.use('/api/users', usersRouter)
+app.use('/api/definitions', definitionsRouter)
 
 app.get('/', (req, res) => {
   res.send('Hello, world!')

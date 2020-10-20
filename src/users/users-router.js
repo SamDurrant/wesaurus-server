@@ -1,6 +1,5 @@
 const express = require('express')
 const path = require('path')
-const { hasUserWithUserName, hasUserWithEmail } = require('./users-service')
 const UsersService = require('./users-service')
 
 const usersRouter = express.Router()

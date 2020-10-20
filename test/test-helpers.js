@@ -30,6 +30,23 @@ function makeMaliciousWord() {
   }
 }
 
+function makeMaliciousDefinition(user, word) {
+  const maliciousDefinition = {
+    id: 91,
+    user_id: user.id,
+    word_id: word.id,
+    like_count: 15,
+    date_created: new Date(),
+    text: `wo<script>alert("xss");</script>rd <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">`,
+  }
+  const expectedDefinition = {
+    ...makeExpectedDefinition([user], [word], maliciousDefinition),
+    text: `wo&lt;script&gt;alert("xss");&lt;/script&gt;rd <img src="https://url.to.file.which/does-not.exist">`,
+  }
+
+  return { maliciousDefinition, expectedDefinition }
+}
+
 function makeUsersArray() {
   return [
     {
@@ -56,8 +73,129 @@ function makeUsersArray() {
   ]
 }
 
+function makeDefinitionsArray(users, words) {
+  return [
+    {
+      id: 1,
+      user_id: users[0].id,
+      word_id: words[0].id,
+      like_count: 15,
+      date_created: new Date('2030-11-13T16:28:32.615Z'),
+      text: 'A true or false value.',
+    },
+    {
+      id: 2,
+      user_id: users[0].id,
+      word_id: words[1].id,
+      like_count: 15,
+      date_created: new Date('2030-11-13T16:28:32.615Z'),
+      text:
+        'A string is a sequence of one or more characters that may consist of letters, numbers, or symbols.',
+    },
+    {
+      id: 3,
+      user_id: users[1].id,
+      word_id: words[1].id,
+      like_count: 15,
+      date_created: new Date('2030-11-13T16:28:32.615Z'),
+      text: 'A string is zero or more characters written inside quotes.',
+    },
+    {
+      id: 4,
+      user_id: users[2].id,
+      word_id: words[2].id,
+      like_count: 15,
+      date_created: new Date('2030-11-13T16:28:32.615Z'),
+      text:
+        'An object is a standalone entity, with properties and type. Compare it with a cup, for example. A cup is an object, with properties. A cup has a color, a design, weight, a material it is made of, etc.',
+    },
+  ]
+}
+
+function makeExpectedDefinition(users, words, definition) {
+  const user = users.find((u) => u.id === definition.user_id)
+  const word = words.find((w) => w.id === definition.word_id)
+
+  return {
+    id: definition.id,
+    user_id: user.id,
+    word_id: word.id,
+    like_count: definition.like_count,
+    date_created: definition.date_created.toISOString(),
+    text: definition.text,
+  }
+}
+
+function cleanTables(db) {
+  return db.transaction((trx) =>
+    trx
+      .raw(
+        `TRUNCATE word, we_user, definition, settings, saved_word, saved_definition`
+      )
+      .then(() =>
+        Promise.all([
+          trx.raw(`ALTER SEQUENCE word_id_seq minvalue 0 START WITH 1`),
+          trx.raw(`ALTER SEQUENCE we_user_id_seq minvalue 0 START WITH 1`),
+          trx.raw(`ALTER SEQUENCE definition_id_seq minvalue 0 START WITH 1`),
+          trx.raw(`ALTER SEQUENCE settings_id_seq minvalue 0 START WITH 1`),
+          trx.raw(`SELECT setval('word_id_seq', 0)`),
+          trx.raw(`SELECT setval('we_user_id_seq', 0)`),
+          trx.raw(`SELECT setval('definition_id_seq', 0)`),
+          trx.raw(`SELECT setval('settings_id_seq', 0)`),
+        ])
+      )
+  )
+}
+
+function makeDefinitionsFixtures() {
+  const testUsers = makeUsersArray()
+  const testWords = makeWordsArray()
+  const testDefinitions = makeDefinitionsArray(testUsers, testWords)
+
+  return { testUsers, testWords, testDefinitions }
+}
+
+function seedUsers(db, users) {
+  return db
+    .into('we_user')
+    .insert(users)
+    .then(() =>
+      // update the auto sequence to stay in sync
+      db.raw(`SELECT setval('we_user_id_seq', ?)`, [users[users.length - 1].id])
+    )
+}
+
+function seedWords(db, words) {
+  return db
+    .into('word')
+    .insert(words)
+    .then(() =>
+      db.raw(`SELECT setval('word_id_seq', ?)`, [words[words.length - 1].id])
+    )
+}
+
+function seedDefinitions(db, users, words, definitions) {
+  return db.transaction(async (trx) => {
+    await seedUsers(trx, users)
+    await seedWords(trx, words)
+    await trx.into('definition').insert(definitions)
+
+    await trx.raw(`SELECT setval('definition_id_seq', ?)`, [
+      definitions[definitions.length - 1].id,
+    ])
+  })
+}
+
 module.exports = {
   makeWordsArray,
+  makeDefinitionsArray,
   makeMaliciousWord,
+  makeMaliciousDefinition,
   makeUsersArray,
+  makeDefinitionsFixtures,
+  makeExpectedDefinition,
+  seedUsers,
+  seedWords,
+  seedDefinitions,
+  cleanTables,
 }

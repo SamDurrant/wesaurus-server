@@ -3,7 +3,11 @@ const app = require('../src/app')
 const supertest = require('supertest')
 const { expect } = require('chai')
 
-const { makeWordsArray, makeMaliciousWord } = require('./test-helpers')
+const {
+  makeWordsArray,
+  makeMaliciousWord,
+  seedWords,
+} = require('./test-helpers')
 
 describe('Words Endpoints', function () {
   let db
@@ -37,9 +41,7 @@ describe('Words Endpoints', function () {
     context(`Given there are words`, () => {
       const testWords = makeWordsArray()
 
-      beforeEach('insert words', () => {
-        return db.insert(testWords).into('word')
-      })
+      beforeEach('insert words', () => seedWords(db, testWords))
 
       it('responds with 200 and all of the words', () => {
         return supertest(app).get('/api/words').expect(testWords)
@@ -112,7 +114,6 @@ describe('Words Endpoints', function () {
             .first()
             .then((row) => {
               expect(row.text).to.eql(newWord.text)
-              expect(row.id).to.eql(newWord.id)
             })
         })
     })
@@ -173,9 +174,7 @@ describe('Words Endpoints', function () {
     context(`Given there are words in the database`, () => {
       const testWords = makeWordsArray()
 
-      beforeEach('insert words', () => {
-        return db.into('word').insert(testWords)
-      })
+      beforeEach('insert words', () => seedWords(db, testWords))
 
       it('responds with 200 and the specified word', () => {
         const wordId = 2

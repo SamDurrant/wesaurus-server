@@ -3,7 +3,7 @@ const app = require('../src/app')
 const supertest = require('supertest')
 const { expect } = require('chai')
 
-const { makeUsersArray } = require('./test-helpers')
+const { makeUsersArray, seedUsers, cleanTables } = require('./test-helpers')
 
 describe('Users Endpoints', function () {
   let db
@@ -21,19 +21,13 @@ describe('Users Endpoints', function () {
 
   after('disconnect from db', () => db.destroy())
 
-  before('clean the table', () =>
-    db.raw('TRUNCATE we_user RESTART IDENTITY CASCADE')
-  )
+  before('clean the table', () => cleanTables(db))
 
-  afterEach('cleanup', () =>
-    db.raw('TRUNCATE we_user RESTART IDENTITY CASCADE')
-  )
+  afterEach('cleanup', () => cleanTables(db))
 
   describe('POST /api/users', () => {
     context('user validation', () => {
-      beforeEach('insert users', () => {
-        return db.insert(testUsers).into('we_user')
-      })
+      beforeEach('insert users', () => seedUsers(db, testUsers))
 
       const requiredFields = ['user_name', 'email', 'password']
 
