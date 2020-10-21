@@ -26,6 +26,13 @@ function makeWordsArray() {
   ]
 }
 
+function makeUserWordsArray() {
+  return [
+    { user_id: 1, word_id: 1 },
+    { user_id: 1, word_id: 2 },
+  ]
+}
+
 function makeMaliciousWord() {
   const maliciousWord = {
     id: 123,
@@ -137,6 +144,10 @@ function makeExpectedDefinition(users, words, definition) {
   }
 }
 
+function makeExpectedUserWordsArray(userWords, allWords) {
+  return userWords.map((word) => allWords.find((w) => w.id === word.word_id))
+}
+
 function cleanTables(db) {
   return db.transaction((trx) =>
     trx
@@ -190,6 +201,10 @@ function seedWords(db, words) {
     )
 }
 
+function seedUserWords(db, words) {
+  return db.into('saved_word').insert(words)
+}
+
 function seedDefinitions(db, users, words, definitions) {
   return db.transaction(async (trx) => {
     await seedUsers(trx, users)
@@ -205,13 +220,16 @@ function seedDefinitions(db, users, words, definitions) {
 module.exports = {
   makeAuthHeader,
   makeWordsArray,
+  makeUserWordsArray,
   makeDefinitionsArray,
   makeMaliciousWord,
   makeMaliciousDefinition,
   makeUsersArray,
+  makeExpectedUserWordsArray,
   makeDefinitionsFixtures,
   makeExpectedDefinition,
   seedUsers,
+  seedUserWords,
   seedWords,
   seedDefinitions,
   cleanTables,

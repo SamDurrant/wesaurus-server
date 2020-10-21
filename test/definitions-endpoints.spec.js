@@ -130,13 +130,12 @@ describe('Definitions Endpoints', function () {
         )
     })
 
-    const requiredFields = ['user_id', 'word_id', 'text']
+    const requiredFields = ['word_id', 'text']
 
     requiredFields.forEach((field) => {
       const testDefinition = testDefinitions[0]
       const newDefinition = {
         text: 'new test definition',
-        user_id: testDefinition.user_id,
         word_id: testDefinition.word_id,
       }
 

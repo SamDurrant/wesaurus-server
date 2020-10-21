@@ -1,9 +1,14 @@
+const xss = require('xss')
+
 const WordsService = {
   getAllWords(db) {
     return db.select('*').from('word')
   },
   getById(db, id) {
     return db.from('word').select('*').where({ id }).first()
+  },
+  getAllById(db, ids) {
+    return db.select('*').from('word').whereIn('id', ids)
   },
   insertWord(db, newWord) {
     return db
@@ -22,6 +27,12 @@ const WordsService = {
   },
   getByText(db, text) {
     return WordsService.getAllWords(db).where('word.text', text).first()
+  },
+  serializeWord(word) {
+    return {
+      id: word.id,
+      text: xss(word.text),
+    }
   },
 }
 

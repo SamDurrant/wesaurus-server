@@ -9,6 +9,7 @@ const authRouter = require('./auth/auth-router')
 const wordsRouter = require('./words/words-router')
 const usersRouter = require('./users/users-router')
 const definitionsRouter = require('./definitions/definitions-router')
+const userWordsRouter = require('./user-words/user-words-router')
 
 const app = express()
 
@@ -22,8 +23,9 @@ app.use(helmet())
 
 app.use('/api/auth', authRouter)
 app.use('/api/words', wordsRouter)
-app.use('/api/users', usersRouter)
 app.use('/api/definitions', definitionsRouter)
+app.use('/api/users', usersRouter)
+app.use('/api/users/:user_id/words', userWordsRouter)
 
 app.get('/', (req, res) => {
   res.send('Hello, world!')

@@ -1,6 +1,5 @@
 const express = require('express')
 const path = require('path')
-const xss = require('xss')
 const WordsService = require('./words-service')
 const DefinitionsService = require('../definitions/definitions-service')
 const { requireAuth } = require('../middleware/jwt-auth')
@@ -8,17 +7,12 @@ const { requireAuth } = require('../middleware/jwt-auth')
 const wordsRouter = express.Router()
 const jsonParser = express.json()
 
-const serializeWord = (word) => ({
-  id: word.id,
-  text: xss(word.text),
-})
-
 wordsRouter
   .route('/')
   .get((req, res, next) => {
     WordsService.getAllWords(req.app.get('db'))
       .then((words) => {
-        res.json(words.map(serializeWord))
+        res.json(words.map(WordsService.serializeWord))
       })
       .catch(next)
   })
@@ -50,7 +44,7 @@ wordsRouter
             res
               .status(201)
               .location(path.posix.join(req.originalUrl, `/${word.id}`))
-              .json(serializeWord(word))
+              .json(WordsService.serializeWord(word))
           }
         )
       })
@@ -76,7 +70,7 @@ wordsRouter
       .catch(next)
   })
   .get((req, res, next) => {
-    res.json(serializeWord(res.word))
+    res.json(WordsService.serializeWord(res.word))
   })
   .delete(requireAuth, (req, res, next) => {
     DefinitionsService.getByWordId(req.app.get('db'), req.params.word_id)

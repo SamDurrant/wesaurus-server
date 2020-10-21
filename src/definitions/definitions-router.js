@@ -17,8 +17,8 @@ definitionsRouter
       .catch(next)
   })
   .post(requireAuth, jsonParser, (req, res, next) => {
-    const { user_id, word_id, text } = req.body
-    const newDefinition = { user_id, word_id, text }
+    const { word_id, text } = req.body
+    const newDefinition = { word_id, text }
 
     // check that required word fields are present
     for (const [key, value] of Object.entries(newDefinition)) {
@@ -30,6 +30,8 @@ definitionsRouter
         })
       }
     }
+
+    newDefinition.user_id = req.user.id
 
     // create definition and return response
     DefinitionsService.insertDefinition(req.app.get('db'), newDefinition)
