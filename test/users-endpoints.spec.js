@@ -1,6 +1,7 @@
 const knex = require('knex')
 const app = require('../src/app')
 const supertest = require('supertest')
+const bcrypt = require('bcryptjs')
 const { expect } = require('chai')
 
 const { makeUsersArray, seedUsers, cleanTables } = require('./test-helpers')
@@ -174,7 +175,7 @@ describe('Users Endpoints', function () {
     })
 
     context('Happy path', () => {
-      it(`responds 201, serialized user`, () => {
+      it(`responds 201, serialized user, storing bcrypted password`, () => {
         const newUser = {
           user_name: 'test_test',
           email: 'test_test@test.com',
@@ -209,6 +210,10 @@ describe('Users Endpoints', function () {
                 })
                 const actualDate = new Date(row.date_created).toLocaleString()
                 expect(actualDate).to.eql(expectedDate)
+                return bcrypt.compare(newUser.password, row.password)
+              })
+              .then((compareMatch) => {
+                expect(compareMatch).to.be.true
               })
           })
       })

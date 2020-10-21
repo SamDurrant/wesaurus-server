@@ -1,4 +1,3 @@
-require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
@@ -6,6 +5,7 @@ const helmet = require('helmet')
 const { NODE_ENV } = require('./config')
 
 // routes
+const authRouter = require('./auth/auth-router')
 const wordsRouter = require('./words/words-router')
 const usersRouter = require('./users/users-router')
 const definitionsRouter = require('./definitions/definitions-router')
@@ -17,10 +17,10 @@ app.use(
     skip: () => NODE_ENV === 'test',
   })
 )
-app.use(express.json())
 app.use(cors())
 app.use(helmet())
 
+app.use('/api/auth', authRouter)
 app.use('/api/words', wordsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/definitions', definitionsRouter)

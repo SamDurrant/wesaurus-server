@@ -7,6 +7,9 @@ const DefinitionsService = {
   getById(db, id) {
     return db.from('definition').select('*').where({ id }).first()
   },
+  getByWordId(db, word_id) {
+    return db.from('definition').select('*').where({ word_id })
+  },
   insertDefinition(db, newDef) {
     return db
       .insert(newDef)

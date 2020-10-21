@@ -21,8 +21,8 @@ VALUES
 
 INSERT INTO we_user (user_name, email, password)
 VALUES
-  ('wordgirl', 'wordgirl@email.com', 'abc123abc'),
-  ('huckleberry', 'huckleberry@finn.com', '123abc123');
+  ('wordgirl', 'wordgirl@email.com', '$2a$12$CsAnvkko7LgzG5GV7Pod4uLwuhgGrOswKVs4K9JXObHhp82zR4jSW'),
+  ('huckleberry', 'huckleberry@finn.com', '$2a$12$dbNXsY4Nzyr4LrpZVu4nleGhLwiPC6DMvoAY8NVRsgRPzAJE2KA92');
 
 INSERT INTO settings (user_id)
 VALUES

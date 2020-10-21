@@ -2,6 +2,8 @@ const express = require('express')
 const path = require('path')
 const xss = require('xss')
 const WordsService = require('./words-service')
+const DefinitionsService = require('../definitions/definitions-service')
+const { requireAuth } = require('../middleware/jwt-auth')
 
 const wordsRouter = express.Router()
 const jsonParser = express.json()
@@ -20,11 +22,11 @@ wordsRouter
       })
       .catch(next)
   })
-  .post(jsonParser, (req, res, next) => {
+  .post(requireAuth, jsonParser, (req, res, next) => {
     const { text } = req.body
     const newWord = { text }
 
-    // check that word values are present
+    // check that required word fields are present
     for (const [key, value] of Object.entries(newWord)) {
       if (value == null) {
         return res.status(400).json({
@@ -76,18 +78,29 @@ wordsRouter
   .get((req, res, next) => {
     res.json(serializeWord(res.word))
   })
-  .delete((req, res, next) => {
-    // TODO: check if word has definitions, if so, do not delete word
-    console.log('hello')
-    WordsService.deleteWord(req.app.get('db'), req.params.word_id)
-      .then(() => res.status(204).end())
+  .delete(requireAuth, (req, res, next) => {
+    DefinitionsService.getByWordId(req.app.get('db'), req.params.word_id)
+      .then((defs) => {
+        // if the word has definitions, return unauthorized
+        if (defs.length > 0) {
+          return res.status(400).json({
+            error: {
+              message: `Cannot delete a word with existing definitions`,
+            },
+          })
+        }
+
+        // otherwise delete the word
+        return WordsService.deleteWord(
+          req.app.get('db'),
+          req.params.word_id
+        ).then(() => res.status(204).end())
+      })
       .catch(next)
   })
-  .patch((req, res, next) => {
+  .patch(requireAuth, jsonParser, (req, res, next) => {
     const { text } = req.body
     const wordToUpdate = { text }
-
-    // TODO: check if word has definitions, if so, do not update word
 
     // check if request contains all values needed
     const numberOfValues = Object.values(wordToUpdate).filter(Boolean).length
@@ -99,8 +112,26 @@ wordsRouter
       })
     }
 
-    WordsService.updateWord(req.app.get('db'), req.params.word_id, wordToUpdate)
-      .then(() => res.status(204).end())
+    DefinitionsService.getByWordId(req.app.get('db'), req.params.word_id)
+      .then((defs) => {
+        // if the word has definitions, return unauthorized
+        if (defs.length > 0) {
+          return res.status(400).json({
+            error: {
+              message: `Cannot update a word with existing definitions`,
+            },
+          })
+        }
+
+        // otherwise update the word
+        return WordsService.updateWord(
+          req.app.get('db'),
+          req.params.word_id,
+          wordToUpdate
+        )
+          .then(() => res.status(204).end())
+          .catch(next)
+      })
       .catch(next)
   })
 

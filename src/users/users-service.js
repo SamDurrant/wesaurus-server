@@ -1,4 +1,5 @@
 const xss = require('xss')
+const bcrypt = require('bcryptjs')
 const PASSWORD_UPPER_LOWER_NUMBER_SPECIAL = /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&])[\S]+/
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
@@ -42,6 +43,9 @@ const UsersService = {
       return 'Email is invalid'
     }
     return null
+  },
+  hashPassword(password) {
+    return bcrypt.hash(password, 12)
   },
   serializeUser(user) {
     return {

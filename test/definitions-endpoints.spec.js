@@ -3,6 +3,7 @@ const app = require('../src/app')
 const supertest = require('supertest')
 const { expect } = require('chai')
 const {
+  makeAuthHeader,
   makeDefinitionsFixtures,
   makeExpectedDefinition,
   cleanTables,
@@ -102,6 +103,7 @@ describe('Definitions Endpoints', function () {
 
       return supertest(app)
         .post('/api/definitions')
+        .set('Authorization', makeAuthHeader(testUsers[0]))
         .send(newDefinition)
         .expect(201)
         .expect((res) => {
@@ -143,6 +145,7 @@ describe('Definitions Endpoints', function () {
 
         return supertest(app)
           .post('/api/definitions')
+          .set('Authorization', makeAuthHeader(testUsers[0]))
           .send(newDefinition)
           .expect(400, {
             error: {
@@ -233,6 +236,7 @@ describe('Definitions Endpoints', function () {
       it(`responds with 404`, () => {
         return supertest(app)
           .patch('/api/definitions/1')
+          .set('Authorization', makeAuthHeader(testUsers[0]))
           .send({ text: 'test 123', like_count: 2 })
           .expect(404, {
             error: {
@@ -261,6 +265,7 @@ describe('Definitions Endpoints', function () {
 
         return supertest(app)
           .patch(`/api/definitions/${idToUpdate}`)
+          .set('Authorization', makeAuthHeader(testUsers[0]))
           .send(updatedDefinition)
           .expect(204)
           .then(() =>
@@ -286,6 +291,7 @@ describe('Definitions Endpoints', function () {
 
         return supertest(app)
           .patch(`/api/definitions/${idToUpdate}`)
+          .set('Authorization', makeAuthHeader(testUsers[0]))
           .send({ irrelevance: 'test test' })
           .expect(400, {
             error: {
@@ -309,6 +315,7 @@ describe('Definitions Endpoints', function () {
         it(`responds with 404`, () => {
           return supertest(app)
             .delete('/api/definitions/1')
+            .set('Authorization', makeAuthHeader(testUsers[0]))
             .expect(404, {
               error: {
                 message: `Definition doesn't exist`,
@@ -331,6 +338,7 @@ describe('Definitions Endpoints', function () {
 
         return supertest(app)
           .delete(`/api/definitions/${idToRemove}`)
+          .set('Authorization', makeAuthHeader(testUsers[0]))
           .expect(204)
           .then(() =>
             supertest(app).get(`/api/definitions`).expect(expectedDefinitions)

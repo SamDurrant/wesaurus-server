@@ -61,21 +61,24 @@ usersRouter.route('/').post(jsonBodyParser, (req, res, next) => {
             })
           }
 
-          const newUser = {
-            user_name,
-            password,
-            email,
-            date_created: 'now()',
-          }
-          // create user in database, return new user
-          return UsersService.insertUser(req.app.get('db'), newUser).then(
-            (user) => {
-              res
-                .status(201)
-                .location(path.posix.join(req.originalUrl, `/${user.id}`))
-                .json(UsersService.serializeUser(user))
+          return UsersService.hashPassword(password).then((hashedPassword) => {
+            const newUser = {
+              user_name,
+              password: hashedPassword,
+              email,
+              date_created: 'now()',
             }
-          )
+
+            // create user in database, return new user
+            return UsersService.insertUser(req.app.get('db'), newUser).then(
+              (user) => {
+                res
+                  .status(201)
+                  .location(path.posix.join(req.originalUrl, `/${user.id}`))
+                  .json(UsersService.serializeUser(user))
+              }
+            )
+          })
         }
       )
     })

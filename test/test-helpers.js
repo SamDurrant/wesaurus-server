@@ -1,3 +1,14 @@
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+
+function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
+  const token = jwt.sign({ user_id: user.id }, secret, {
+    subject: user.user_name,
+    algorithm: 'HS256',
+  })
+  return `Bearer ${token}`
+}
+
 function makeWordsArray() {
   return [
     {
@@ -103,7 +114,7 @@ function makeDefinitionsArray(users, words) {
     {
       id: 4,
       user_id: users[2].id,
-      word_id: words[2].id,
+      word_id: words[1].id,
       like_count: 15,
       date_created: new Date().toISOString(),
       text:
@@ -156,9 +167,14 @@ function makeDefinitionsFixtures() {
 }
 
 function seedUsers(db, users) {
+  const preppedUsers = users.map((user) => ({
+    ...user,
+    password: bcrypt.hashSync(user.password, 1),
+  }))
+
   return db
     .into('we_user')
-    .insert(users)
+    .insert(preppedUsers)
     .then(() =>
       // update the auto sequence to stay in sync
       db.raw(`SELECT setval('we_user_id_seq', ?)`, [users[users.length - 1].id])
@@ -187,6 +203,7 @@ function seedDefinitions(db, users, words, definitions) {
 }
 
 module.exports = {
+  makeAuthHeader,
   makeWordsArray,
   makeDefinitionsArray,
   makeMaliciousWord,
