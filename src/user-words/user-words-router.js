@@ -61,4 +61,43 @@ userWordsRouter
       .catch(next)
   })
 
+userWordsRouter
+  .route('/:word_id')
+  .all(requireAuth)
+  .all(checkWordExists)
+  .get((req, res, next) => {
+    console.log('YAYAYQ', res.word.word_id)
+    WordsService.getById(req.app.get('db'), res.word.word_id).then((word) => {
+      res.json(WordsService.serializeWord(word))
+    })
+  })
+  .delete((req, res, next) => {
+    // delete word
+    UserWordsService.deleteWord(req.app.get('db'), res.word.word_id)
+      .then(() => res.status(204).end())
+      .catch(next)
+  })
+
+async function checkWordExists(req, res, next) {
+  try {
+    const word = await UserWordsService.getByWordId(
+      req.app.get('db'),
+      req.params.word_id
+    )
+    // if word doesn't exist, return error
+    if (!word)
+      return res.status(404).json({
+        error: {
+          message: `This word does not exist in your dictionary`,
+        },
+      })
+
+    // if word exists, attach to res object
+    res.word = word
+    next()
+  } catch (error) {
+    next(error)
+  }
+}
+
 module.exports = userWordsRouter

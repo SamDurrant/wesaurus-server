@@ -14,8 +14,8 @@ const UserWordsService = {
         return rows[0]
       })
   },
-  deleteWord(db, id) {
-    return db('saved_word').where({ id }).delete()
+  deleteWord(db, word_id) {
+    return db('saved_word').where({ word_id }).delete()
   },
   updateWord(db, id, newWordFields) {
     return db('saved_word').where({ id }).update(newWordFields)

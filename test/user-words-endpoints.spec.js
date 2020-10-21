@@ -191,4 +191,85 @@ describe('User-Words Endpoints', function () {
       })
     })
   })
+
+  //
+  // GET SPECIFIC ENDPOINT
+  //
+  describe('GET /api/users/:user_id/words/:word_id', () => {
+    beforeEach('insert users, words & definitions', () =>
+      seedDefinitions(db, testUsers, testWords, testDefinitions)
+    )
+
+    context(`Given no user words`, () => {
+      it(`responds with 404`, () => {
+        return supertest(app)
+          .get(`/api/users/${testUser.id}/words/1`)
+          .set('Authorization', makeAuthHeader(testUser))
+          .expect(404, {
+            error: {
+              message: `This word does not exist in your dictionary`,
+            },
+          })
+      })
+    })
+
+    context(`Given there are user words`, () => {
+      beforeEach('insert user words', () => seedUserWords(db, testUserWords))
+      const wordId = testUserWords[0].word_id
+      const expectedWord = expectedUserWords.find(
+        (w) => w.id === testUserWords[0].word_id
+      )
+
+      it('responds with 200 and all of the words', () => {
+        return supertest(app)
+          .get(`/api/users/${testUser.id}/words/${wordId}`)
+          .set('Authorization', makeAuthHeader(testUser))
+          .expect(200, expectedWord)
+      })
+    })
+  })
+
+  //
+  // DELETE SPECIFIC ENDPOINT
+  //
+  describe('DELETE /api/users/:user_id/words/:word_id', () => {
+    beforeEach('insert users, words & definitions', () =>
+      seedDefinitions(db, testUsers, testWords, testDefinitions)
+    )
+
+    context(`Given no user words`, () => {
+      it(`responds with 404`, () => {
+        return supertest(app)
+          .delete(`/api/users/${testUser.id}/words/1`)
+          .set('Authorization', makeAuthHeader(testUser))
+          .expect(404, {
+            error: {
+              message: `This word does not exist in your dictionary`,
+            },
+          })
+      })
+    })
+
+    context(`Given there are words in user's dictionary`, () => {
+      beforeEach('insert user words', () => seedUserWords(db, testUserWords))
+      const wordId = testUserWords[0].word_id
+      const expectedWords = expectedUserWords.filter(
+        (w) => w.id !== testUserWords[0].word_id
+      )
+
+      it(`responds with 204 and removes the word`, () => {
+        return supertest(app)
+          .delete(`/api/users/${testUser.id}/words/${wordId}`)
+          .set('Authorization', makeAuthHeader(testUser))
+          .expect(204)
+
+          .then((res) =>
+            supertest(app)
+              .get(`/api/users/${testUser.id}/words`)
+              .set('Authorization', makeAuthHeader(testUser))
+              .expect(expectedWords)
+          )
+      })
+    })
+  })
 })
