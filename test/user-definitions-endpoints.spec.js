@@ -225,4 +225,84 @@ describe.only('User-Definitions Endpoints', function () {
       })
     })
   })
+
+  //
+  // GET SPECIFIC ENDPOINT
+  //
+  describe('GET /api/users/:user_id/definitions/:definition_id', () => {
+    beforeEach('insert users, words & definitions', () =>
+      seedDefinitions(db, testUsers, testWords, testDefinitions)
+    )
+
+    context(`Given no user definitions`, () => {
+      it(`responds with 404`, () => {
+        return supertest(app)
+          .get(`/api/users/${testUser.id}/definitions/1`)
+          .set('Authorization', makeAuthHeader(testUser))
+          .expect(404, {
+            error: {
+              message: `This definition does not exist in your dictionary`,
+            },
+          })
+      })
+    })
+
+    context('Given there are user definitions', () => {
+      beforeEach('insert user definitions', () =>
+        seedUserDefinitions(db, testUserDefinitions)
+      )
+      const defId = testUserDefinitions[0].definition_id
+      const expectedDef = expectedUserDefinitions.find((d) => d.id === defId)
+
+      it('responds with 200 and the definition', () => {
+        return supertest(app)
+          .get(`/api/users/${testUser.id}/definitions/${defId}`)
+          .set('Authorization', makeAuthHeader(testUser))
+          .expect(200, expectedDef)
+      })
+    })
+  })
+
+  //
+  // DELETE SPECIFIC ENDPOINT
+  //
+  describe('DELETE /api/users/:user_id/definitions/:definition_id', () => {
+    beforeEach('insert users, words & definitions', () =>
+      seedDefinitions(db, testUsers, testWords, testDefinitions)
+    )
+
+    context(`Given no user definitions`, () => {
+      it(`responds with 404`, () => {
+        return supertest(app)
+          .delete(`/api/users/${testUser.id}/definitions/1`)
+          .set('Authorization', makeAuthHeader(testUser))
+          .expect(404, {
+            error: {
+              message: `This definition does not exist in your dictionary`,
+            },
+          })
+      })
+    })
+
+    context('Given there are user definitions', () => {
+      beforeEach('insert user definitions', () =>
+        seedUserDefinitions(db, testUserDefinitions)
+      )
+      const defId = testUserDefinitions[0].definition_id
+      const expectedDefs = expectedUserDefinitions.filter((d) => d.id !== defId)
+
+      it('responds with 204 and removes the definition', () => {
+        return supertest(app)
+          .delete(`/api/users/${testUser.id}/definitions/${defId}`)
+          .set('Authorization', makeAuthHeader(testUser))
+          .expect(204)
+          .then((res) =>
+            supertest(app)
+              .get(`/api/users/${testUser.id}/definitions`)
+              .set('Authorization', makeAuthHeader(testUser))
+              .expect(expectedDefs)
+          )
+      })
+    })
+  })
 })

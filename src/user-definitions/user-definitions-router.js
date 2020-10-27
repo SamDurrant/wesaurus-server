@@ -26,6 +26,8 @@ userDefinitionsRouter
     const { definition_id } = req.body
     const newDefinition = { definition_id }
 
+    // TODO: check that word is saved to user-words, if not, add that word
+
     // check that required definition fields are present
     for (const [key, value] of Object.entries(newDefinition)) {
       if (value == null) {
@@ -81,27 +83,26 @@ userDefinitionsRouter
       .catch(next)
   })
 
-async function checkDefinitionExists(req, res, next) {
-  try {
-    const definition = await DefinitionsService.getById(
+userDefinitionsRouter
+  .route('/:definition_id')
+  .all(requireAuth)
+  .all(checkUserDefinitionExists)
+  .get((req, res, next) => {
+    DefinitionsService.getById(
       req.app.get('db'),
-      req.body.definition_id || req.params.definition_id
+      res.definition.definition_id
+    ).then((def) => {
+      res.json(DefinitionsService.serializeDefinition(def))
+    })
+  })
+  .delete((req, res, next) => {
+    UserDefinitionsService.deleteDefinition(
+      req.app.get('db'),
+      res.definition.definition_id
     )
-    // if definition doesn't exist, return error
-    if (!definition)
-      return res.status(404).json({
-        error: {
-          message: `This definition does not exist`,
-        },
-      })
-
-    // if definition exists, attach to res object
-    res.definition = definition
-    next()
-  } catch (error) {
-    next(error)
-  }
-}
+      .then(() => res.status(204).end())
+      .catch(next)
+  })
 
 async function checkUserDefinitionExists(req, res, next) {
   try {
