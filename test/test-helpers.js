@@ -91,6 +91,17 @@ function makeUsersArray() {
   ]
 }
 
+function makeUserDefinitionsArray() {
+  return [
+    { user_id: 1, definition_id: 1 },
+    { user_id: 1, definition_id: 2 },
+  ]
+}
+
+function makeExpectedUserDefinitionsArray(userDefs, allDefs) {
+  return userDefs.map((def) => allDefs.find((w) => w.id === def.definition_id))
+}
+
 function makeDefinitionsArray(users, words) {
   return [
     {
@@ -217,20 +228,27 @@ function seedDefinitions(db, users, words, definitions) {
   })
 }
 
+function seedUserDefinitions(db, definitions) {
+  return db.into('saved_definition').insert(definitions)
+}
+
 module.exports = {
   makeAuthHeader,
   makeWordsArray,
   makeUserWordsArray,
+  makeUserDefinitionsArray,
   makeDefinitionsArray,
   makeMaliciousWord,
   makeMaliciousDefinition,
   makeUsersArray,
   makeExpectedUserWordsArray,
+  makeExpectedUserDefinitionsArray,
   makeDefinitionsFixtures,
   makeExpectedDefinition,
   seedUsers,
   seedUserWords,
   seedWords,
   seedDefinitions,
+  seedUserDefinitions,
   cleanTables,
 }

@@ -66,7 +66,6 @@ userWordsRouter
   .all(requireAuth)
   .all(checkWordExists)
   .get((req, res, next) => {
-    console.log('YAYAYQ', res.word.word_id)
     WordsService.getById(req.app.get('db'), res.word.word_id).then((word) => {
       res.json(WordsService.serializeWord(word))
     })

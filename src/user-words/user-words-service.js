@@ -17,12 +17,6 @@ const UserWordsService = {
   deleteWord(db, word_id) {
     return db('saved_word').where({ word_id }).delete()
   },
-  updateWord(db, id, newWordFields) {
-    return db('saved_word').where({ id }).update(newWordFields)
-  },
-  getByText(db, text) {
-    return WordsService.getAllWords(db).where('saved_word.text', text).first()
-  },
 }
 
 module.exports = UserWordsService

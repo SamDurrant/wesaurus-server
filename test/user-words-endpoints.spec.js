@@ -166,28 +166,28 @@ describe('User-Words Endpoints', function () {
             },
           })
       })
+    })
 
-      context(`Given XSS attack content`, () => {
-        const { maliciousWord, expectedWord } = makeMaliciousWord()
-        const newWord = {
-          word_id: maliciousWord.id,
-        }
+    context(`Given XSS attack content`, () => {
+      const { maliciousWord, expectedWord } = makeMaliciousWord()
+      const newWord = {
+        word_id: maliciousWord.id,
+      }
 
-        beforeEach('insert malicious word', () => {
-          return db.insert([maliciousWord]).into('word')
-        })
+      beforeEach('insert malicious word', () => {
+        return db.insert([maliciousWord]).into('word')
+      })
 
-        it(`removes XSS attack context`, () => {
-          return supertest(app)
-            .post(`/api/users/${testUser.id}/words`)
-            .set('Authorization', makeAuthHeader(testUser))
-            .send(newWord)
-            .expect(201)
-            .expect((res) => {
-              expect(res.body.text).to.eql(expectedWord.text)
-              expect(res.body.id).to.eql(expectedWord.id)
-            })
-        })
+      it(`removes XSS attack context`, () => {
+        return supertest(app)
+          .post(`/api/users/${testUser.id}/words`)
+          .set('Authorization', makeAuthHeader(testUser))
+          .send(newWord)
+          .expect(201)
+          .expect((res) => {
+            expect(res.body.text).to.eql(expectedWord.text)
+            expect(res.body.id).to.eql(expectedWord.id)
+          })
       })
     })
   })

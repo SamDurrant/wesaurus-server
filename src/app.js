@@ -10,6 +10,7 @@ const wordsRouter = require('./words/words-router')
 const usersRouter = require('./users/users-router')
 const definitionsRouter = require('./definitions/definitions-router')
 const userWordsRouter = require('./user-words/user-words-router')
+const userDefinitionsRouter = require('./user-definitions/user-definitions-router')
 
 const app = express()
 
@@ -26,6 +27,7 @@ app.use('/api/words', wordsRouter)
 app.use('/api/definitions', definitionsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/users/:user_id/words', userWordsRouter)
+app.use('/api/users/:user_id/definitions', userDefinitionsRouter)
 
 app.get('/', (req, res) => {
   res.send('Hello, world!')

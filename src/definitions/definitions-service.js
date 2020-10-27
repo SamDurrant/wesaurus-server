@@ -7,6 +7,9 @@ const DefinitionsService = {
   getById(db, id) {
     return db.from('definition').select('*').where({ id }).first()
   },
+  getAllById(db, ids) {
+    return db.select('*').from('definition').whereIn('id', ids)
+  },
   getByWordId(db, word_id) {
     return db.from('definition').select('*').where({ word_id })
   },
