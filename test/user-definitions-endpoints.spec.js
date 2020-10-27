@@ -14,7 +14,7 @@ const {
   makeExpectedUserDefinitionsArray,
 } = require('./test-helpers')
 
-describe.only('User-Definitions Endpoints', function () {
+describe('User-Definitions Endpoints', function () {
   let db
   const { testUsers, testWords, testDefinitions } = makeDefinitionsFixtures()
   const testUserDefinitions = makeUserDefinitionsArray()

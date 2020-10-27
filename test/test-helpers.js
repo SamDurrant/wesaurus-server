@@ -91,6 +91,26 @@ function makeUsersArray() {
   ]
 }
 
+function makeUserSettingsArray() {
+  return [
+    {
+      id: 1,
+      dark_mode: false,
+      user_id: 1,
+    },
+    {
+      id: 2,
+      dark_mode: false,
+      user_id: 2,
+    },
+    {
+      id: 3,
+      dark_mode: false,
+      user_id: 3,
+    },
+  ]
+}
+
 function makeUserDefinitionsArray() {
   return [
     { user_id: 1, definition_id: 1 },
@@ -201,6 +221,27 @@ function seedUsers(db, users) {
       // update the auto sequence to stay in sync
       db.raw(`SELECT setval('we_user_id_seq', ?)`, [users[users.length - 1].id])
     )
+    .then(() => {
+      return seedSettings(db, preppedUsers)
+    })
+}
+
+function seedSettings(db, preppedUsers) {
+  const settings = preppedUsers.map((u, i) => ({
+    id: i + 1,
+    dark_mode: false,
+    user_id: u.id,
+  }))
+
+  return db
+    .into('settings')
+    .insert(settings)
+    .then(() =>
+      // update the auto sequence to stay in sync
+      db.raw(`SELECT setval('settings_id_seq', ?)`, [
+        settings[settings.length - 1].id,
+      ])
+    )
 }
 
 function seedWords(db, words) {
@@ -221,7 +262,6 @@ function seedDefinitions(db, users, words, definitions) {
     await seedUsers(trx, users)
     await seedWords(trx, words)
     await trx.into('definition').insert(definitions)
-
     await trx.raw(`SELECT setval('definition_id_seq', ?)`, [
       definitions[definitions.length - 1].id,
     ])
@@ -241,6 +281,7 @@ module.exports = {
   makeMaliciousWord,
   makeMaliciousDefinition,
   makeUsersArray,
+  makeUserSettingsArray,
   makeExpectedUserWordsArray,
   makeExpectedUserDefinitionsArray,
   makeDefinitionsFixtures,

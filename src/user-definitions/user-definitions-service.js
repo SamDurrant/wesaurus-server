@@ -1,4 +1,4 @@
-const UserWordsService = {
+const UserDefinitionsService = {
   getAllDefinitions(db) {
     return db.select('*').from('saved_definition')
   },
@@ -23,4 +23,4 @@ const UserWordsService = {
   },
 }
 
-module.exports = UserWordsService
+module.exports = UserDefinitionsService
