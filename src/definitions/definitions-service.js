@@ -31,7 +31,7 @@ const DefinitionsService = {
   serializeDefinition(def) {
     return {
       id: def.id,
-      user_id: def.user_id,
+      author_id: def.author_id,
       word_id: def.word_id,
       text: xss(def.text),
       like_count: Number(def.like_count),

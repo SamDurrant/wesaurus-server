@@ -92,41 +92,43 @@ wordsRouter
       })
       .catch(next)
   })
-  .patch(requireAuth, jsonParser, (req, res, next) => {
-    const { text } = req.body
-    const wordToUpdate = { text }
+  .patch(requireAuth, jsonParser, async function (req, res, next) {
+    try {
+      const { text } = req.body
+      const wordToUpdate = { text }
 
-    // check if request contains all values needed
-    const numberOfValues = Object.values(wordToUpdate).filter(Boolean).length
-    if (numberOfValues == 0) {
-      return res.status(400).json({
-        error: {
-          message: `Request body must contain 'text'`,
-        },
-      })
+      // check if request contains all values needed
+      const numberOfValues = Object.values(wordToUpdate).filter(Boolean).length
+      if (numberOfValues == 0) {
+        return res.status(400).json({
+          error: {
+            message: `Request body must contain 'text'`,
+          },
+        })
+      }
+
+      const defs = await DefinitionsService.getByWordId(
+        req.app.get('db'),
+        req.params.word_id
+      )
+      // if the word has definitions, return unauthorized
+      if (defs.length > 0) {
+        return res.status(400).json({
+          error: {
+            message: `Cannot update a word with existing definitions`,
+          },
+        })
+      }
+
+      // otherwise update the word
+      WordsService.updateWord(
+        req.app.get('db'),
+        req.params.word_id,
+        wordToUpdate
+      ).then(() => res.status(204).end())
+    } catch (error) {
+      next(error)
     }
-
-    DefinitionsService.getByWordId(req.app.get('db'), req.params.word_id)
-      .then((defs) => {
-        // if the word has definitions, return unauthorized
-        if (defs.length > 0) {
-          return res.status(400).json({
-            error: {
-              message: `Cannot update a word with existing definitions`,
-            },
-          })
-        }
-
-        // otherwise update the word
-        return WordsService.updateWord(
-          req.app.get('db'),
-          req.params.word_id,
-          wordToUpdate
-        )
-          .then(() => res.status(204).end())
-          .catch(next)
-      })
-      .catch(next)
   })
 
 module.exports = wordsRouter

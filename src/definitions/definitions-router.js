@@ -31,7 +31,7 @@ definitionsRouter
       }
     }
 
-    newDefinition.user_id = req.user.id
+    newDefinition.author_id = req.user.id
 
     // create definition and return response
     DefinitionsService.insertDefinition(req.app.get('db'), newDefinition)
@@ -61,6 +61,15 @@ definitionsRouter
       return res.status(400).json({
         error: {
           message: `Request body must contain 'text' and 'like_count'`,
+        },
+      })
+    }
+
+    // check if request user is author
+    if (res.definition.author_id !== req.user.id) {
+      return res.status(400).json({
+        error: {
+          message: `You are not the author of this definition`,
         },
       })
     }

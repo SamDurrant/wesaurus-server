@@ -29,7 +29,7 @@ VALUES
   (1),
   (2);
 
-INSERT INTO definition (user_id, word_id, text)
+INSERT INTO definition (author_id, word_id, text)
 VALUES
   (1, 1, 'Pieces of memory that the application has used in the past but is not needed any longer but has not yet been returned back to us.'),
   (2, 1, 'When memory is allocated, but not deallocated, a memory leak occurs. If too many memory leaks occur, they can usurp all of memory and bring everything to a halt or slow the processing considerably.'),

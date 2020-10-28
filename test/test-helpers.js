@@ -51,7 +51,7 @@ function makeMaliciousWord() {
 function makeMaliciousDefinition(user, word) {
   const maliciousDefinition = {
     id: 91,
-    user_id: user.id,
+    author_id: user.id,
     word_id: word.id,
     like_count: 15,
     date_created: new Date(),
@@ -126,7 +126,7 @@ function makeDefinitionsArray(users, words) {
   return [
     {
       id: 1,
-      user_id: users[0].id,
+      author_id: users[0].id,
       word_id: words[0].id,
       like_count: 15,
       date_created: new Date().toISOString(),
@@ -134,7 +134,7 @@ function makeDefinitionsArray(users, words) {
     },
     {
       id: 2,
-      user_id: users[0].id,
+      author_id: users[0].id,
       word_id: words[1].id,
       like_count: 15,
       date_created: new Date().toISOString(),
@@ -143,7 +143,7 @@ function makeDefinitionsArray(users, words) {
     },
     {
       id: 3,
-      user_id: users[1].id,
+      author_id: users[1].id,
       word_id: words[1].id,
       like_count: 15,
       date_created: new Date().toISOString(),
@@ -151,7 +151,7 @@ function makeDefinitionsArray(users, words) {
     },
     {
       id: 4,
-      user_id: users[2].id,
+      author_id: users[2].id,
       word_id: words[1].id,
       like_count: 15,
       date_created: new Date().toISOString(),
@@ -162,12 +162,12 @@ function makeDefinitionsArray(users, words) {
 }
 
 function makeExpectedDefinition(users, words, definition) {
-  const user = users.find((u) => u.id === definition.user_id)
+  const user = users.find((u) => u.id === definition.author_id)
   const word = words.find((w) => w.id === definition.word_id)
 
   return {
     id: definition.id,
-    user_id: user.id,
+    author_id: user.id,
     word_id: word.id,
     like_count: definition.like_count,
     date_created: definition.date_created,
