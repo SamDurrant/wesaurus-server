@@ -131,4 +131,30 @@ wordsRouter
     }
   })
 
+wordsRouter
+  .route('/:word_id/definitions')
+  .all((req, res, next) => {
+    // check if word exists before proceeding to endpoints
+    WordsService.getById(req.app.get('db'), req.params.word_id)
+      .then((word) => {
+        if (!word) {
+          return res.status(404).json({
+            error: {
+              message: `Word does not exist`,
+            },
+          })
+        }
+        res.word = word
+        next()
+      })
+      .catch(next)
+  })
+  .get((req, res, next) => {
+    DefinitionsService.getByWordId(req.app.get('db'), req.params.word_id)
+      .then((defs) => {
+        res.json(defs.map(DefinitionsService.serializeDefinition))
+      })
+      .catch(next)
+  })
+
 module.exports = wordsRouter

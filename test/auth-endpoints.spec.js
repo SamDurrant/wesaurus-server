@@ -41,7 +41,9 @@ describe('Auth Endpoints', () => {
         return supertest(app)
           .post('/api/auth/login')
           .send(loginAttemptBody)
-          .expect(400, { error: `Missing '${field}' in request body` })
+          .expect(400, {
+            error: { message: `Missing '${field}' in request body` },
+          })
       })
 
       it(`responds 400 'invalid user_name or password' when bad user_name`, () => {
@@ -54,7 +56,7 @@ describe('Auth Endpoints', () => {
           .post('/api/auth/login')
           .send(invalidUser)
           .expect(400, {
-            error: `Incorrect user_name or password`,
+            error: { message: `Incorrect username or password` },
           })
       })
 
@@ -68,7 +70,7 @@ describe('Auth Endpoints', () => {
           .post('/api/auth/login')
           .send(invalidUser)
           .expect(400, {
-            error: `Incorrect user_name or password`,
+            error: { message: `Incorrect username or password` },
           })
       })
 

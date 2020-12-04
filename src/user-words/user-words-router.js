@@ -4,6 +4,7 @@ const UserWordsService = require('./user-words-service')
 const WordsService = require('../words/words-service')
 const { requireAuth } = require('../middleware/jwt-auth')
 const UserDefinitionsService = require('../user-definitions/user-definitions-service')
+const DefinitionsService = require('../definitions/definitions-service')
 
 const userWordsRouter = express.Router()
 const jsonParser = express.json()
@@ -95,6 +96,22 @@ userWordsRouter
     // delete word
     UserWordsService.deleteWord(req.app.get('db'), res.word.word_id)
       .then(() => res.status(204).end())
+      .catch(next)
+  })
+
+userWordsRouter
+  .route('/:word_id/definitions')
+  .all(requireAuth)
+  .all(checkWordExists)
+  .get((req, res, next) => {
+    UserDefinitionsService.getByWordId(
+      req.app.get('db'),
+      req.user.id,
+      res.word.word_id
+    )
+      .then((defs) => {
+        res.json(defs.map(DefinitionsService.serializeDefinition))
+      })
       .catch(next)
   })
 

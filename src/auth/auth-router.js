@@ -13,7 +13,9 @@ authRouter.route('/login').post(jsonBodyParser, (req, res, next) => {
   for (const [key, value] of Object.entries(loginUser)) {
     if (value == null)
       return res.status(400).json({
-        error: `Missing '${key}' in request body`,
+        error: {
+          message: `Missing '${key}' in request body`,
+        },
       })
   }
 
@@ -22,7 +24,9 @@ authRouter.route('/login').post(jsonBodyParser, (req, res, next) => {
     .then((dbUser) => {
       if (!dbUser)
         return res.status(400).json({
-          error: 'Incorrect user_name or password',
+          error: {
+            message: 'Incorrect username or password',
+          },
         })
       // check that password for user is a match
       return AuthService.comparePasswords(
@@ -31,7 +35,9 @@ authRouter.route('/login').post(jsonBodyParser, (req, res, next) => {
       ).then((compareMatch) => {
         if (!compareMatch)
           return res.status(400).json({
-            error: 'Incorrect user_name or password',
+            error: {
+              message: 'Incorrect username or password',
+            },
           })
         // if user_name and password are correct, send user_name as subject and password as payload. Return json web token with response
         const sub = dbUser.user_name
