@@ -28,6 +28,12 @@ const DefinitionsService = {
   updateDefinition(db, id, newDefFields) {
     return db('definition').where({ id }).update(newDefFields)
   },
+  incrementLikeCount(db, id) {
+    return db('definition').select('*').where({ id }).increment('like_count')
+  },
+  decrementLikeCount(db, id, count) {
+    return db('definition').where({ id }).decrement('like_count')
+  },
   serializeDefinition(def) {
     return {
       id: def.id,

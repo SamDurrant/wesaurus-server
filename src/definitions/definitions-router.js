@@ -51,8 +51,8 @@ definitionsRouter
     res.json(DefinitionsService.serializeDefinition(res.definition))
   })
   .patch(requireAuth, jsonParser, (req, res, next) => {
-    const { text, like_count } = req.body
-    const definitionToUpdate = { text, like_count }
+    const { text } = req.body
+    const definitionToUpdate = { text }
 
     const numOfValues = Object.values(definitionToUpdate).filter(Boolean).length
 
@@ -60,7 +60,7 @@ definitionsRouter
     if (numOfValues == 0) {
       return res.status(400).json({
         error: {
-          message: `Request body must contain 'text' and 'like_count'`,
+          message: `Request body must contain 'text'`,
         },
       })
     }

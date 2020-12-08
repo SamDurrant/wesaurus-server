@@ -79,15 +79,26 @@ userDefinitionsRouter
           newWord
         )
       }
-      // create definition and return response from res.definition object
-      UserDefinitionsService.insertDefinition(req.app.get('db'), newDef).then(
-        () => {
+      const insertDef = UserDefinitionsService.insertDefinition(
+        req.app.get('db'),
+        newDef
+      )
+
+      if (insertDef) {
+        DefinitionsService.incrementLikeCount(
+          req.app.get('db'),
+          defDoesExist.id
+        ).then(() => {
+          const defData = {
+            ...defDoesExist,
+            like_count: defDoesExist.like_count + 1,
+          }
           res
             .status(201)
             .location(path.posix.join(req.originalUrl, `/${defDoesExist.id}`))
-            .json(DefinitionsService.serializeDefinition(defDoesExist))
-        }
-      )
+            .json(DefinitionsService.serializeDefinition(defData))
+        })
+      }
     } catch (error) {
       next(error)
     }
@@ -106,7 +117,14 @@ userDefinitionsRouter
       req.user.id,
       res.definition.definition_id
     )
-      .then(() => res.status(204).end())
+      .then(() =>
+        DefinitionsService.decrementLikeCount(
+          req.app.get('db'),
+          res.definition.definition_id
+        ).then(() => {
+          res.status(204).end()
+        })
+      )
       .catch(next)
   })
 

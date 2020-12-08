@@ -68,7 +68,7 @@ describe('Protected endpoints', function () {
       it(`responds 401 'Missing bearer token' when no basic token`, () => {
         return endpoint
           .method(endpoint.path)
-          .expect(401, { error: `Missing bearer token` })
+          .expect(401, { error: { message: `Missing bearer token` } })
       })
 
       it(`responds 401 'Unauthorized request' when invalid JWT secret`, () => {
@@ -78,7 +78,7 @@ describe('Protected endpoints', function () {
         return endpoint
           .method(endpoint.path)
           .set('Authorization', makeAuthHeader(validUser, invalidSecret))
-          .expect(401, { error: `Unauthorized request` })
+          .expect(401, { error: { message: `Unauthorized request` } })
       })
 
       it(`responds 401 'Unauthorized request' when invalid sub in payload`, () => {
@@ -89,7 +89,7 @@ describe('Protected endpoints', function () {
         return endpoint
           .method(endpoint.path)
           .set('Authorization', makeAuthHeader(invalidUser))
-          .expect(401, { error: `Unauthorized request` })
+          .expect(401, { error: { message: `Unauthorized request` } })
       })
     })
   })

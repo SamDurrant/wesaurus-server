@@ -254,7 +254,6 @@ describe('Definitions Endpoints', function () {
         const idToUpdate = 1
         const updatedDefinition = {
           text: 'this is new text',
-          like_count: 1,
         }
 
         const expectedDefinition = {
@@ -294,7 +293,7 @@ describe('Definitions Endpoints', function () {
           .send({ irrelevance: 'test test' })
           .expect(400, {
             error: {
-              message: `Request body must contain 'text' and 'like_count'`,
+              message: `Request body must contain 'text'`,
             },
           })
       })
