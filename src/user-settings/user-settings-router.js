@@ -18,12 +18,9 @@ userSettingsRouter
   })
   .patch(requireAuth, jsonParser, (req, res, next) => {
     const { dark_mode } = req.body
-    const settingsToUpdate = { dark_mode }
-
-    const numOfValues = Object.values(settingsToUpdate).filter(Boolean).length
 
     // check if request contain all values needed
-    if (numOfValues == 0) {
+    if (dark_mode === null || dark_mode === undefined) {
       return res.status(400).json({
         error: {
           message: `Request body must contain 'dark_mode'`,
@@ -32,11 +29,9 @@ userSettingsRouter
     }
 
     // update settings
-    UserSettingsService.updateSettings(
-      req.app.get('db'),
-      req.user.id,
-      settingsToUpdate
-    )
+    UserSettingsService.updateSettings(req.app.get('db'), req.user.id, {
+      dark_mode,
+    })
       .then(() => res.status(204).end())
       .catch(next)
   })
