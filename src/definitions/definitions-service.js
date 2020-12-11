@@ -13,6 +13,22 @@ const DefinitionsService = {
   getByWordId(db, word_id) {
     return db.from('definition').select('*').where({ word_id })
   },
+  getByUserId(db, user_id) {
+    return db
+      .from('definition AS def')
+      .join('word AS defWord', 'def.word_id', 'defWord.id')
+      .select(
+        'def.id',
+        'def.author_id',
+        'def.word_id',
+        'def.text',
+        'def.like_count',
+        'def.date_created',
+        'defWord.text AS word_text'
+      )
+      .orderBy('date_created', 'desc')
+      .where('author_id', user_id)
+  },
   insertDefinition(db, newDef) {
     return db
       .insert(newDef)
@@ -31,11 +47,11 @@ const DefinitionsService = {
   incrementLikeCount(db, id) {
     return db('definition').select('*').where({ id }).increment('like_count')
   },
-  decrementLikeCount(db, id, count) {
+  decrementLikeCount(db, id) {
     return db('definition').where({ id }).decrement('like_count')
   },
   serializeDefinition(def) {
-    return {
+    let serialized = {
       id: def.id,
       author_id: def.author_id,
       word_id: def.word_id,
@@ -43,6 +59,10 @@ const DefinitionsService = {
       like_count: Number(def.like_count),
       date_created: new Date(def.date_created),
     }
+    if (def.word_text) {
+      serialized.word_text = xss(def.word_text)
+    }
+    return serialized
   },
 }
 

@@ -1,6 +1,8 @@
 const express = require('express')
 const path = require('path')
 const UsersService = require('./users-service')
+const { requireAuth } = require('../middleware/jwt-auth')
+const DefinitionsService = require('../definitions/definitions-service')
 
 const usersRouter = express.Router()
 const jsonBodyParser = express.json()
@@ -84,5 +86,16 @@ usersRouter.route('/').post(jsonBodyParser, (req, res, next) => {
     })
     .catch(next)
 })
+
+usersRouter
+  .route('/definitions')
+  .all(requireAuth)
+  .get(jsonBodyParser, (req, res, next) => {
+    DefinitionsService.getByUserId(req.app.get('db'), req.user.id)
+      .then((defs) => {
+        res.json(defs.map(DefinitionsService.serializeDefinition))
+      })
+      .catch(next)
+  })
 
 module.exports = usersRouter
